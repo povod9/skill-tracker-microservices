@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+
+  auth-db:
+    image: postgres:latest
+    container_name: auth-service-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    networks:
+      - tracker-network
+
+  skill-db:
+    image: postgres:latest
+    container_name: skill-service-db
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: skilldb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    networks:
+      - tracker-network
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - auth-db
+      - discovery-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    networks:
+      - tracker-network
+
+  skill-service:
+    build: ./skill-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - skill-db
+      - discovery-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://skill-db:5432/skilldb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    networks:
+      - tracker-network
+
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    networks:
+      - tracker-network
+
+  discovery-server:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - tracker-network
+
+
+networks:
+  tracker-network:
+    driver: bridge
