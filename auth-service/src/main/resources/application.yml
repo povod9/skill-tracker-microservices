@@ -18,6 +18,14 @@ management:
       exposure:
         include: health,info
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+logging:
+  level:
+    org.springframework.security: TRACE
+
 eureka:
   client:
     service-url:

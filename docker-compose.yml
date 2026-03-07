@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_DB: authdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - tracker-network
 
@@ -24,7 +24,7 @@ services:
     environment:
       POSTGRES_DB: skilldb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - tracker-network
 
@@ -38,8 +38,10 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    env_file:
+      - .env
     networks:
       - tracker-network
 
@@ -53,8 +55,10 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://skill-db:5432/skilldb
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    env_file:
+      - .env
     networks:
       - tracker-network
 
