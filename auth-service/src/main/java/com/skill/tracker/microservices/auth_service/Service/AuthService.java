@@ -6,6 +6,8 @@ import com.skill.tracker.microservices.auth_service.Entities.User;
 import com.skill.tracker.microservices.auth_service.Dto.UserDto;
 import com.skill.tracker.microservices.auth_service.Entities.UserEntity;
 import com.skill.tracker.microservices.auth_service.Entities.enums.Role;
+import com.skill.tracker.microservices.auth_service.Exceptions.EmailAlreadyExistsException;
+import com.skill.tracker.microservices.auth_service.Exceptions.InvalidCredentialsException;
 import com.skill.tracker.microservices.auth_service.Mapper.UserMapper;
 import com.skill.tracker.microservices.auth_service.Repository.UserRepository;
 import com.skill.tracker.microservices.auth_service.Security.JwtCore;
@@ -33,7 +35,7 @@ public class AuthService {
     )
     {
         if(repository.existsByEmail(userToCreate.email())){
-            throw new IllegalArgumentException("This email already registered in system");
+            throw new EmailAlreadyExistsException("This email already registered in system");
         }
 
         UserEntity userEntity = new UserEntity(
@@ -62,7 +64,19 @@ public class AuthService {
             return loginResponse;
 
         }else {
-            throw new IllegalArgumentException("Wrong password");
+            throw new InvalidCredentialsException("Wrong password or email");
         }
+    }
+
+    public UserDto getMyInfo(String email) {
+
+        if(email == null){
+            throw new IllegalArgumentException("Email cannot be null");
+        }
+
+        UserEntity userEntity = repository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Cannot find by email " + email));
+
+        return mapper.toDto(userEntity);
     }
 }
