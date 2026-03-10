@@ -12,8 +12,12 @@ import com.skill.tracker.microservices.auth_service.Mapper.UserMapper;
 import com.skill.tracker.microservices.auth_service.Repository.UserRepository;
 import com.skill.tracker.microservices.auth_service.Security.JwtCore;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -43,7 +47,7 @@ public class AuthService {
                 userToCreate.name(),
                 userToCreate.email(),
                 passwordEncoder.encode(userToCreate.password()),
-                Role.USER
+                userToCreate.role()
         );
 
         repository.save(userEntity);
@@ -78,5 +82,25 @@ public class AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("Cannot find by email " + email));
 
         return mapper.toDto(userEntity);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDto> getAllUsers() {
+
+        List<UserEntity> userEntities = repository.findAll();
+
+        return userEntities.stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    public UserDto deleteUser(
+            Long id
+    )
+    {
+     Optional<UserEntity> userEntity = repository.findById(id);
+     repository.delete(userEntity.get());
+
+     return mapper.toDto(userEntity.get());
     }
 }

@@ -7,16 +7,12 @@ import com.skill.tracker.microservices.auth_service.Entities.User;
 import com.skill.tracker.microservices.auth_service.Dto.UserDto;
 import com.skill.tracker.microservices.auth_service.Service.AuthService;
 import jakarta.validation.Valid;
-import org.apache.tomcat.util.http.parser.Authorization;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
+
 
 @RestController
 public class AuthController {
@@ -34,7 +30,8 @@ public class AuthController {
     {
         var createdUser = service.registerUser(userToCreate);
 
-        return ResponseEntity.status(201)
+        return ResponseEntity
+                .status(201)
                 .body(createdUser);
     }
 
@@ -45,16 +42,43 @@ public class AuthController {
     {
         LoginResponse loginResponse = service.loginUser(login);
 
-        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity
+                .ok()
+                .body(loginResponse);
 
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getMyInfo(Authentication authentication)
+    public ResponseEntity<UserDto> getMyInfo(
+            Authentication authentication
+    )
     {
         Object principalDto = authentication.getPrincipal();
 
-        return ResponseEntity.ok(service.getMyInfo(((PrincipalDto) principalDto).email()));
+        return ResponseEntity
+                .ok()
+                .body(service.getMyInfo(((PrincipalDto) principalDto).email()));
+    }
+
+    @GetMapping("/all-users")
+    public ResponseEntity<List<UserDto>> getAllUsers()
+    {
+
+
+        return ResponseEntity
+                .ok()
+                .body(service.getAllUsers());
+    }
+
+    @DeleteMapping("/delete-user/{id}")
+    public ResponseEntity<UserDto> deleteUserById(
+            @PathVariable Long id
+    )
+    {
+
+        return ResponseEntity
+                .ok()
+                .body(service.deleteUser(id));
     }
 
 
